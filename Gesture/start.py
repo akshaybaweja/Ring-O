@@ -1,4 +1,4 @@
-import serial, os, signals, sys, suggestions
+import serial, os, signals, sys
 from sklearn.externals import joblib
 from  gesture import gesture_callback
 '''
@@ -100,7 +100,6 @@ if len(sys.argv)>1:
 clf = None
 classes = None
 sentence = ""
-hinter = suggestions.Hinter.load_english_dict()
 
 #Loads the machine learning model from file
 if TRY_TO_PREDICT:
@@ -192,38 +191,34 @@ try:
 
 					#Get the last word in the sentence
 					last_word = sentence.split(" ")[-1:][0]
-
-					#If AUTOCORRECT is True, the cross-calculated char will override the predicted one
-					if AUTOCORRECT and char.islower():
-						predicted_char = hinter.most_probable_letter(clf, classes, linearized_sample, last_word)
-						if predicted_char is not None:
-							print "CURRENT WORD: {word}, PREDICTED {old}, CROSS_CALCULATED {new}".format(word = last_word, old = char, new = predicted_char)
-							char = predicted_char
 					
 					#If the mode is WRITE, assigns special meanings to some characters
 					#and builds a sentence with each char
-					if ENABLE_WRITE:
-						if char == 'D': #Delete the last character
-							sentence = sentence[:-1]
-						elif char == 'A': #Delete all characters
-							if DELETE_ALL_ENABLED:
-								sentence = ""
-							else:
-								print "DELETE_ALL_ENABLED = FALSE"
-						else: #Add the char to the sentence
-							sentence += char
-						#Prints the last char and the sentence
-						print "[{char}] -> {sentence}".format(char = char, sentence = sentence)
-						#Saves the output to a file
-						output_file = open("output.txt","w")
-						output_file.write(sentence)
-						output_file.close()
-					
-					elif GESTURE_MODE:
+					# if ENABLE_WRITE:
+					# 	if char == 'D': #Delete the last character
+					# 		sentence = sentence[:-1]
+					# 	elif char == 'A': #Delete all characters
+					# 		if DELETE_ALL_ENABLED:
+					# 			sentence = ""
+					# 		else:
+					# 			print "DELETE_ALL_ENABLED = FALSE"
+					# 	else: #Add the char to the sentence
+					# 		sentence += char
+					# 	#Prints the last char and the sentence
+					# 	print "[{char}] -> {sentence}".format(char = char, sentence = sentence)
+					# 	#Saves the output to a file
+					# 	output_file = open("output.txt","w")
+					# 	output_file.write(sentence)
+					# 	output_file.close()
+					# else:
+					# 	print char
+
+					if GESTURE_MODE:
 						#call gesture script
-						gesture_callback(char)
-					else:
-						print char
+						callback_gesture = gesture_callback(char)
+						output_file = open("output.txt","w")
+						output_file.write(callback_gesture)
+						output_file.close()
 			else: #In case of a corrupted sequence
 				print "ERROR..."
 				current_test_index -= 1

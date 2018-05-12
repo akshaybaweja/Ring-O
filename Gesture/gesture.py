@@ -47,15 +47,18 @@ end nextSlide
 scpt = applescript.AppleScript(script)
 
 def gesture_callback(gesture):
+    returntext = ""
     if gesture == "a":
         scpt.call('volumeMute')
-        print "Muted."
+        returntext = "Muted."
     elif gesture == "b":
         scpt.call('volumeUp')
-        print "Volume Up by 10"
+        returntext = "Volume Up by 10"
     elif gesture == "c":
         scpt.call('volumeDown')
-        print "Volume Down by 10"
+        returntext = "Volume Down by 10"
     elif gesture == "d":
         scpt.call('nextSlide')
-        print "Next Slide"
+        returntext = "Next Slide"
+    
+    return returntext

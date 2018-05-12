@@ -1,4 +1,4 @@
-import serial, os, signals, sys, suggestions
+import serial, os, signals, sys
 from sklearn.externals import joblib
 '''
 
@@ -95,7 +95,6 @@ if len(sys.argv)>1:
 clf = None
 classes = None
 sentence = ""
-hinter = suggestions.Hinter.load_english_dict()
 
 #Loads the machine learning model from file
 if TRY_TO_PREDICT:
@@ -188,13 +187,6 @@ try:
 					#Get the last word in the sentence
 					last_word = sentence.split(" ")[-1:][0]
 
-					#If AUTOCORRECT is True, the cross-calculated char will override the predicted one
-					if AUTOCORRECT and char.islower():
-						predicted_char = hinter.most_probable_letter(clf, classes, linearized_sample, last_word)
-						if predicted_char is not None:
-							print "CURRENT WORD: {word}, PREDICTED {old}, CROSS_CALCULATED {new}".format(word = last_word, old = char, new = predicted_char)
-							char = predicted_char
-					
 					#If the mode is WRITE, assigns special meanings to some characters
 					#and builds a sentence with each char
 					if ENABLE_WRITE:
