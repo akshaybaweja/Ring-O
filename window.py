@@ -1,5 +1,5 @@
 from tkinter import *
-import os, subprocess
+import os, subprocess, re
 
 root = Tk()
 
@@ -10,11 +10,12 @@ class mainWindow:
         self.mode = StringVar()
 
         self.root.title("Ring - O")
+        self.root.geometry("800x600")
         self.mode.set("Select Mode")
         
         self.titlelabel = Label(self.root, textvariable=self.mode)
-        self.mainFrame = LabelFrame(self.root, width=800, height=600, labelwidget=self.titlelabel, padx=10, pady=10)
-
+        self.mainFrame = LabelFrame(self.root, labelwidget=self.titlelabel, padx=10, pady=10)
+        
         self.statusbar = statusBar(root)
         self.menubar = menuBar(root, self)
 
@@ -60,6 +61,7 @@ class menuBar:
         self.toolMenu.add_command(label="Learn", command=self.learn)
         self.toolMenu.add_separator()
         self.toolMenu.add_command(label="Predict", command=self.predict)
+        self.toolMenu.add_command(label="End Predict", command=self.endPredict)
         self.menu.add_cascade(label="Tools", menu=self.toolMenu)
 
         self.helpMenu = Menu(self.menu, tearoff=0)
@@ -88,8 +90,8 @@ class menuBar:
         batchEntry = Entry(top, textvariable=batch)
         batchEntry.grid(row=1, column=1)
 
-        trainButton = Button(top, text="Start Sampling")
-        trainButton.grid(row=3, rowspan=2)
+        trainButton = Button(top, text="Start Sampling", command=lambda: self.trainTask("Keyboard", letter.get(), batch.get()))
+        trainButton.grid(row=2, columnspan=2)
 
     def trainGesture(self):
         top = Toplevel()
@@ -107,28 +109,38 @@ class menuBar:
         batchEntry = Entry(top, textvariable=batch)
         batchEntry.grid(row=1, column=1)
 
-        trainButton = Button(top, text="Start Sampling")
-        trainButton.grid(row=3, rowspan=2)
+        trainButton = Button(top, text="Start Sampling", command=lambda: self.trainTask("Gesture", letter.get(), batch.get()))
+        trainButton.grid(row=2, columnspan=2)
+
+    def trainTask(self, type, letter, batch):
+        os.system("ttab -t 'training' 'cd "+type+" && python start.py target="+letter+":"+batch+"'")
 
     def learn(self):
         top = Toplevel()
         top.title("Learn | Output")
+        
+        output = subprocess.check_output("cd "+self.mode.get()+" && python learn.py", shell=True)
+        
+        acc = "New Model Accuracy: " + str(round(float(re.search('SCORE: (\d*.\d*)', output).group(1))*100, 2))+" %"
+        accuracy = Label(top, font=('Monaco',20, "bold"), text=acc, pady=10, bg="black", fg="white")
+        accuracy.pack(fill=X)
 
-        output = subprocess.check_output(["python",self.mode.get() + "/learn.py"])
-
-        msg = Message(top, text=output, font=('Monospaced',12), aspect=200)
-        msg.pack()
+        msg = Text(top, font=('Monaco',14), height=40)
+        msg.insert(INSERT, output)
+        msg.pack(fill=BOTH)
 
     def predict(self):
-        output = ""
         
         if self.mode.get() == "Keyboard":
-            output = subprocess.check_output(["python","Keyboard/start.py","write"])
+            self.t = subprocess.call("ttab -t 'predict' 'cd Keyboard && python start.py write'", shell=True)
+            
         elif self.mode.get() == "Gesture":
-            output = subprocess.check_output(["python","Gesture/start.py","gesture"])
-        
-        print output
+            self.t = subprocess.call("ttab -t 'predict' 'cd Gesture && python start.py gesture'", shell=True)
     
+    def endPredict(self):
+        scriptEndProgram = "osascript -e 'tell application "+'"Terminal"' +" to close windows where name contains "+'"predict"'+"'"
+        os.system(scriptEndProgram)
+
     def about(self):
         top = Toplevel()
         top.title("About Ring-O")
@@ -153,6 +165,8 @@ class statusBar:
 
     def updateStatusBar(self, text):
         self.statusText.set(text)
+
+os.system("find . -name '.DS_Store' -type f -delete")
 
 mainWindow(root)
 
