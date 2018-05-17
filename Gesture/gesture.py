@@ -85,5 +85,5 @@ def gesture_callback(gesture):
     return returntext
 
 def togglebulb():
-    tplink_bulb = "https://maker.ifttt.com/trigger/tplink_bulb/with/key/eKnKGaJb-sA33WzfgucqzxT-j0nyZDTPXPllo52S2Bh"
+    tplink_bulb = "https://maker.ifttt.com/trigger/tplink/with/key/eKnKGaJb-sA33WzfgucqzxT-j0nyZDTPXPllo52S2Bh"
     content = urllib2.urlopen(tplink_bulb).read()
